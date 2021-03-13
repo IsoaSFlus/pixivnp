@@ -1,0 +1,20 @@
+[package]
+name = "pixivnp"
+version = "0.1.0"
+authors = ["IsoaSFlus <me@isoasflus.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_json = "*"
+serde = { version = "*", features = ["derive"] }
+chrono = "*"
+clap = "2"
+regex = "1"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "*", features = ["json"] }
+async-channel = "1"
+
+[profile.release]
+panic = 'abort'
