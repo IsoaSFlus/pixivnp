@@ -22,8 +22,7 @@ jobs:
         use-cross: true
         command: build
         args: --release --target aarch64-linux-android
-    - run: find ./
-    - run: mv ./target/aarch64-linux-android/release/pxixvnp ./pixivnp-android
+    - run: mv ./target/aarch64-linux-android/release/pixivnp ./pixivnp-android
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
@@ -49,7 +48,7 @@ jobs:
         use-cross: true
         command: build
         args: --release --target aarch64-unknown-linux-gnu
-    - run: mv ./target/aarch64-unknown-linux-gnu/release/pxixvnp ./pixivnp-aarch64
+    - run: mv ./target/aarch64-unknown-linux-gnu/release/pixivnp ./pixivnp-aarch64
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
@@ -74,7 +73,7 @@ jobs:
       with:
         command: build
         args: --release
-    - run: mv ./target/release/pxixvnp ./pixivnp-amd64
+    - run: mv ./target/release/pixivnp ./pixivnp-amd64
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
