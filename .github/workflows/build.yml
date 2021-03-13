@@ -22,11 +22,12 @@ jobs:
         use-cross: true
         command: build
         args: --release --target aarch64-linux-android
+    - run: mv ./target/**/pxixvnp ./pixivnp-android
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        tag: "android"
-        artifacts: "./target/**/pixivnp"
+        tag: "release"
+        artifacts: "./pixivnp-android"
         token: ${{ secrets.GITHUB_TOKEN }}
   aarch64:
     runs-on: ubuntu-20.04
@@ -47,11 +48,12 @@ jobs:
         use-cross: true
         command: build
         args: --release --target aarch64-unknown-linux-gnu
+    - run: mv ./target/**/pxixvnp ./pixivnp-aarch64
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        tag: "aarch64"
-        artifacts: "./target/**/pixivnp"
+        tag: "release"
+        artifacts: "./pixivnp-aarch64"
         token: ${{ secrets.GITHUB_TOKEN }}
   amd64:
     runs-on: ubuntu-20.04
@@ -71,9 +73,10 @@ jobs:
       with:
         command: build
         args: --release
+    - run: mv ./target/**/pxixvnp ./pixivnp-amd64
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        tag: "amd64"
-        artifacts: "./target/release/pixivnp"
+        tag: "release"
+        artifacts: "./pixivnp-amd64"
         token: ${{ secrets.GITHUB_TOKEN }}
