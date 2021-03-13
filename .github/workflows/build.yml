@@ -4,6 +4,30 @@ on:
   push:
 
 jobs:
+  android:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: aarch64-linux-android
+        override: true
+    - uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --release --target aarch64-linux-android
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        tag: "android"
+        artifacts: "./target/**/pixivnp"
+        token: ${{ secrets.GITHUB_TOKEN }}
   aarch64:
     runs-on: ubuntu-20.04
 
@@ -27,7 +51,7 @@ jobs:
       with:
         allowUpdates: true
         tag: "aarch64"
-        artifacts: "./target/release/pixivnp"
+        artifacts: "./target/**/pixivnp"
         token: ${{ secrets.GITHUB_TOKEN }}
   amd64:
     runs-on: ubuntu-20.04
