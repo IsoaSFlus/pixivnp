@@ -141,11 +141,11 @@ async fn get_pic_single_day(
     Ok(ret)
 }
 
-async fn get_pic(day_start: u8, mut day_range: u8) -> Result<(), Box<dyn std::error::Error>> {
+async fn get_pic(day_start: u8, day_range: u8) -> Result<(), Box<dyn std::error::Error>> {
     let mut tnow = Local::now();
     let mut all_pic: HashMap<u64, PxPic> = HashMap::new();
     tnow = tnow - chrono::Duration::days(i64::try_from(day_start)?);
-    while day_range > 0 {
+    for _ in 0..day_range {
         all_pic.extend(
             get_pic_single_day(
                 format!("{:04}{:02}{:02}", tnow.year(), tnow.month(), tnow.day()).as_str(),
@@ -153,13 +153,22 @@ async fn get_pic(day_start: u8, mut day_range: u8) -> Result<(), Box<dyn std::er
             .await?,
         );
         tnow = tnow - chrono::Duration::days(1);
-        day_range -= 1;
+    }
+    for _ in 0..3 {
+        for (k, _) in get_pic_single_day(
+            format!("{:04}{:02}{:02}", tnow.year(), tnow.month(), tnow.day()).as_str(),
+        )
+        .await?
+        {
+            all_pic.remove(&k);
+        }
+        tnow = tnow - chrono::Duration::days(1);
     }
     println!("total: {:?}", all_pic.len());
 
     let (tx, rx) = async_channel::unbounded();
     let mut workers = Vec::new();
-    for _ in 1..20 {
+    for _ in 0..20 {
         let tmprx = rx.clone();
         let f = tokio::task::spawn_local(async move {
             download_worker(tmprx).await.unwrap();
