@@ -1,9 +1,10 @@
+use async_recursion::async_recursion;
 use chrono::prelude::*;
 use clap::Arg;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::convert::TryFrom;
+use std::{collections::HashMap, io::Error};
 use tokio::io::AsyncWriteExt;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -35,6 +36,8 @@ struct PxPic {
     page_cnt: usize,
     id: u64,
 }
+
+#[async_recursion]
 async fn download_pic_single(url: &str, file_name: &str) -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
     let mut resp = client
@@ -47,21 +50,7 @@ async fn download_pic_single(url: &str, file_name: &str) -> Result<(), Box<dyn s
             if url.ends_with("jpg") {
                 let url = format!("{}png", &url[..url.len() - 3]);
                 let file_name = format!("{}png", &file_name[..file_name.len() - 3]);
-                let mut resp = client
-                    .get(format!(r"{}", &url).as_str())
-                    .header(r"User-Agent", r"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36")
-                    .header(r#"Referer"#, r#"https://www.pixiv.net/ranking.php"#)
-                    .send().await?;
-                if resp.status() != 200 {
-                    println!("{}: {}", resp.status(), &url);
-                } else {
-                    let mut f =
-                        tokio::fs::File::create(format!("./pixiv_pic/{}", &file_name)).await?;
-                    while let Some(chunk) = resp.chunk().await? {
-                        f.write_all(&chunk).await?;
-                    }
-                    f.sync_all().await?;
-                }
+                download_pic_single(&url, &file_name).await?;
             }
         } else {
             println!("{}: {}", resp.status(), &url);
@@ -100,9 +89,7 @@ async fn download_worker(
     Ok(())
 }
 
-async fn get_pic_single_day(
-    rank_date: &str,
-) -> Result<HashMap<u64, PxPic>, Box<dyn std::error::Error>> {
+async fn get_pic_single_day(rank_date: &str) -> std::io::Result<HashMap<u64, PxPic>> {
     let mut ret: HashMap<u64, PxPic> = HashMap::new();
     let re = Regex::new(r"(/img/\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}/\d+)_p").unwrap();
     let client = reqwest::Client::new();
@@ -112,9 +99,8 @@ async fn get_pic_single_day(
         .header(r#"User-Agent"#, r#"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"#)
         .header(r#"Referer"#, r#"https://www.pixiv.net/ranking.php"#)
         .query(&[("p", format!("{:?}",i).as_str()), ("date", rank_date)])
-        .send().await?
-        .json::<PxResp>().await?;
-        // .json::<HashMap<contents: String,Vec<PxItem>>>().await?;
+        .send().await.map_err(|_| Error::new(std::io::ErrorKind::Other, "http request send failed"))?
+        .json::<PxResp>().await.map_err(|_| Error::new(std::io::ErrorKind::Other, "parse response to json failed"))?;
         for item in resp.contents.into_iter() {
             if item.illust_content_type.bl == true
                 || item.illust_content_type.furry == true
@@ -203,6 +189,7 @@ async fn main() {
                 .required(true)
                 .takes_value(true),
         )
+        .version(clap::crate_version!())
         .get_matches();
     let day_start: u8 = ma.value_of("day-start").unwrap_or("0").parse().unwrap_or(0);
     let day_length: u8 = ma

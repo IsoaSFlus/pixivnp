@@ -1,8 +1,8 @@
-cargo-features = ["strip"]
+# cargo-features = ["strip"]
 
 [package]
 name = "pixivnp"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["IsoaSFlus <me@isoasflus.com>"]
 edition = "2018"
 
@@ -17,7 +17,9 @@ regex = "1"
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "*", features = ["json", "native-tls-vendored"] }
 async-channel = "1"
+futures = "*"
+async-recursion = "*"
 
 [profile.release]
 panic = 'abort'
-strip = "symbols"
+# strip = "symbols"
