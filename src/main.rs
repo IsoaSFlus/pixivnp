@@ -1,6 +1,6 @@
 use async_recursion::async_recursion;
 use chrono::prelude::*;
-use clap::Arg;
+use clap::Parser;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -37,12 +37,22 @@ struct PxPic {
     id: u64,
 }
 
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+pub struct Args {
+    #[clap(short = 'd', long = "day-start", value_parser)]
+    day_start: u8,
+
+    #[clap(short = 'l', long = "day-length", value_parser)]
+    day_length: u8,
+}
+
 #[async_recursion]
 async fn download_pic_single(url: &str, file_name: &str) -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
     let mut resp = client
         .get(format!(r"{}", &url).as_str())
-        .header(r"User-Agent", r"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36")
+        .header(r"User-Agent", r"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0")
         .header(r#"Referer"#, r#"https://www.pixiv.net/ranking.php"#)
         .send().await?;
     if resp.status() != 200 {
@@ -170,33 +180,10 @@ async fn get_pic(day_start: u8, day_range: u8) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
+
 #[tokio::main]
 async fn main() {
-    let ma = clap::App::new("pixivnp")
-        .author("IsoaSFlus <me@isoasflus.com>")
-        .arg(
-            Arg::with_name("day-start")
-                .short("d")
-                .long("day-start")
-                .value_name("INT")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("day-length")
-                .short("l")
-                .long("day-length")
-                .value_name("INT")
-                .required(true)
-                .takes_value(true),
-        )
-        .version(clap::crate_version!())
-        .get_matches();
-    let day_start: u8 = ma.value_of("day-start").unwrap_or("0").parse().unwrap_or(0);
-    let day_length: u8 = ma
-        .value_of("day-length")
-        .unwrap_or("1")
-        .parse()
-        .unwrap_or(1);
+    let args = Args::parse();
 
     // This is running on a core thread.
     std::fs::create_dir_all("./pixiv_pic/").unwrap();
@@ -207,7 +194,7 @@ async fn main() {
     local
         .run_until(async move {
             tokio::task::spawn_local(async move {
-                get_pic(day_start, day_length).await.unwrap();
+                get_pic(args.day_start, args.day_length).await.unwrap();
             })
             .await
             .unwrap();

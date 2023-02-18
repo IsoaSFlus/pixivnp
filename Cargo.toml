@@ -4,21 +4,21 @@
 name = "pixivnp"
 version = "0.2.0"
 authors = ["IsoaSFlus <me@isoasflus.com>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde_json = "*"
-serde = { version = "*", features = ["derive"] }
-chrono = "*"
-clap = "2"
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+chrono = "0.4"
+clap = { version = "4", features = ["derive"] }
 regex = "1"
 tokio = { version = "1", features = ["full"] }
-reqwest = { version = "*", features = ["json", "native-tls-vendored"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 async-channel = "1"
-futures = "*"
-async-recursion = "*"
+futures = "0.3"
+async-recursion = "1"
 
 [profile.release]
 panic = 'abort'
