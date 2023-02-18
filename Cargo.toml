@@ -2,8 +2,8 @@
 
 [package]
 name = "pixivnp"
-version = "0.2.0"
-authors = ["IsoaSFlus <me@isoasflus.com>"]
+version = "0.3.0"
+authors = ["THMonster"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
